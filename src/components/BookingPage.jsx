@@ -168,7 +168,7 @@ const BookingPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/bookings', {
+      const response = await fetch('https://elmira-backend.vercel.app', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -192,7 +192,7 @@ const BookingPage = () => {
             onSuccess: async function(result){
               // [BARU] Otomatis update status ke database jadi 'Confirmed' setelah bayar
               try {
-                await fetch(`http://localhost:5000/api/bookings/${data.data._id}`, {
+                await fetch(`https://elmira-backend.vercel.app/${data.data._id}`, {
                   method: 'PUT',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ status: 'Confirmed' })
