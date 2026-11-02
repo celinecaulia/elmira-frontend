@@ -73,7 +73,7 @@ const AdminDashboard = () => {
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch('https://elmira-backend.vercel.app');
+      const response = await fetch('https://elmira-backend.vercel.app/api/bookings');
       const data = await response.json();
       setBookings(data);
       setLoading(false);
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
   const handleUpdateStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'Pending' ? 'Confirmed' : 'Completed';
     try {
-      const response = await fetch(`https://elmira-backend.vercel.app/${id}`, {
+      const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -104,7 +104,7 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Yakin ingin menghapus data booking ini?')) {
       try {
-        const response = await fetch(`https://elmira-backend.vercel.app/${id}`, {
+        const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/${id}`, {
           method: 'DELETE'
         });
         if (response.ok) {
