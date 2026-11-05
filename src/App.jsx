@@ -10,6 +10,8 @@ import AboutPage from './components/AboutPage';
 import BookingPage from './components/BookingPage';
 import AdminDashboard from './components/AdminDashboard';
 import MapSection from './components/MapSection'; // <-- Ditambahkan: Import MapSection
+import OwnerDashboard from './components/OwnerDashboard';
+
 
 function App() {
   return (
@@ -17,6 +19,8 @@ function App() {
       <Routes>
         {/* Halaman Booking khusus (Tanpa Navbar utama & Tanpa Map) */}
         <Route path="/booking" element={<BookingPage />} />
+        
+        <Route path="/owner" element={<OwnerDashboard />} />
 
         {/* Halaman Admin khusus (Tanpa Navbar utama & Tanpa Map) */}
         <Route path="/admin" element={<AdminDashboard />} />
