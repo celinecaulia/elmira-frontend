@@ -104,10 +104,15 @@ export default function OwnerDashboard() {
     localStorage.setItem('elmira_owner_expenses', JSON.stringify(expenses));
   }, [expenses]);
 
-  // HANDLER LOGIN OWNER
+  // HANDLER LOGIN OWNER YANG AMAN MENGGUNAKAN .ENV
   const handleLogin = (e) => {
     e.preventDefault();
-    if (username === 'owner' && password === 'elmira123') {
+    
+    // Mengambil data rahasia dari file .env (jika kosong, pakai fallback aman)
+    const validUser = import.meta.env.VITE_OWNER_USERNAME || 'owner_elmirasalon';
+    const validPass = import.meta.env.VITE_OWNER_PASSWORD || 'awasownergalak1984';
+
+    if (username === validUser && password === validPass) {
       sessionStorage.setItem('elmira_owner_auth', 'true');
       setIsAuthenticated(true);
       Swal.fire({
