@@ -304,7 +304,7 @@ export default function OwnerDashboard() {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Masukkan username (owner)"
+                placeholder="Masukkan username"
                 className="w-full px-4 py-3 rounded-xl border border-[#E2D5C8] bg-[#FAF7F2] text-[#3A2E2B] focus:outline-none focus:ring-2 focus:ring-[#8C5A4F] transition"
                 required
               />
@@ -318,7 +318,7 @@ export default function OwnerDashboard() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Masukkan password (elmira123)"
+                placeholder="Masukkan password"
                 className="w-full px-4 py-3 rounded-xl border border-[#E2D5C8] bg-[#FAF7F2] text-[#3A2E2B] focus:outline-none focus:ring-2 focus:ring-[#8C5A4F] transition"
                 required
               />
