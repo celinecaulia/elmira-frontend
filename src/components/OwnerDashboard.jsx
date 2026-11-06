@@ -74,13 +74,26 @@ export default function OwnerDashboard() {
   const [expAmount, setExpAmount] = useState('');
   const [expDate, setExpDate] = useState('2026-11-06');
 
-  // Ambil URL API Backend
-  const API_URL = 'https://elmira-backend.vercel.app/api/bookings';
+  // Ambil URL API Khusus Owner yang sudah diproteksi Middleware 403
+  const API_URL = 'https://elmira-backend.vercel.app/api/bookings/owner-analytics';
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(API_URL, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-owner-auth': import.meta.env.VITE_OWNER_SECRET_TOKEN || 'KunciRahasiaOwnerElmira2026'
+        }
+      });
+
+      if (response.status === 403) {
+        Swal.fire('Akses Ditolak (403)', 'Token otorisasi Owner tidak valid!', 'error');
+        setLoading(false);
+        return;
+      }
+
       const data = await response.json();
       if (Array.isArray(data)) {
         setBookings(data);
