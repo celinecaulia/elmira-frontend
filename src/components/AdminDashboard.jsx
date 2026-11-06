@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 const AdminDashboard = () => {
+  // State Autentikasi Admin
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loginUser, setLoginUser] = useState('');
+  const [loginPass, setLoginPass] = useState('');
+  const [loginError, setLoginError] = useState('');
+
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,6 +23,14 @@ const AdminDashboard = () => {
     '28/10/2026': 'Full'
   });
 
+  // Cek status login admin dari localStorage saat pertama kali dimuat
+  useEffect(() => {
+    const authStatus = localStorage.getItem('elmira_admin_auth');
+    if (authStatus === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
   // Ambil data status kuota dari localStorage saat pertama kali dimuat
   useEffect(() => {
     const savedStatuses = localStorage.getItem('elmira_date_statuses');
@@ -24,6 +38,30 @@ const AdminDashboard = () => {
       setDateStatuses(JSON.parse(savedStatuses));
     }
   }, []);
+
+  // Handler Login Admin
+  const handleLogin = (e) => {
+    e.preventDefault();
+    const validUser = import.meta.env.VITE_ADMIN_USERNAME || 'admin_elmirasalon';
+    const validPass = import.meta.env.VITE_ADMIN_PASSWORD || 'adminrahasia2026';
+
+    if (loginUser === validUser && loginPass === validPass) {
+      localStorage.setItem('elmira_admin_auth', 'true');
+      setIsAuthenticated(true);
+      setLoginError('');
+      fetchBookings();
+    } else {
+      setLoginError('Username atau Password Admin salah!');
+    }
+  };
+
+  // Handler Logout Admin
+  const handleLogout = () => {
+    localStorage.removeItem('elmira_admin_auth');
+    setIsAuthenticated(false);
+    setLoginUser('');
+    setLoginPass('');
+  };
 
   // Logika Kalender Matriks Admin
   const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
@@ -66,14 +104,21 @@ const AdminDashboard = () => {
     localStorage.setItem('elmira_date_statuses', JSON.stringify(updatedStatuses));
   };
 
-  // Mengambil data booking dari backend Express & MongoDB
+  // Mengambil data booking dari backend Express & MongoDB dengan Header Keamanan Admin
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (isAuthenticated) {
+      fetchBookings();
+    }
+  }, [isAuthenticated]);
 
   const fetchBookings = async () => {
     try {
-      const response = await fetch('https://elmira-backend.vercel.app/api/bookings');
+      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN || 'KunciRahasiaAdminElmira2026';
+      const response = await fetch('https://elmira-backend.vercel.app/api/bookings', {
+        headers: {
+          'x-admin-auth': adminToken
+        }
+      });
       const data = await response.json();
       setBookings(data);
       setLoading(false);
@@ -87,9 +132,13 @@ const AdminDashboard = () => {
   const handleUpdateStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'Pending' ? 'Confirmed' : 'Completed';
     try {
+      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN || 'KunciRahasiaAdminElmira2026';
       const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-auth': adminToken
+        },
         body: JSON.stringify({ status: newStatus })
       });
       if (response.ok) {
@@ -104,8 +153,12 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Yakin ingin menghapus data booking ini?')) {
       try {
+        const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN || 'KunciRahasiaAdminElmira2026';
         const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/${id}`, {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: {
+            'x-admin-auth': adminToken
+          }
         });
         if (response.ok) {
           fetchBookings();
@@ -116,6 +169,68 @@ const AdminDashboard = () => {
     }
   };
 
+  // =========================================================================
+  // TAMPILAN FORM LOGIN ADMIN (JIKA BELUM TERAUTENTIKASI)
+  // =========================================================================
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-[#FAF7F5] flex items-center justify-center px-4 font-sans">
+        <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-sm border border-[#E8D3CE]">
+          <div className="text-center mb-6 space-y-1">
+            <h2 className="text-2xl font-serif font-bold text-[#4A3B32]">Admin Portal</h2>
+            <p className="text-xs text-gray-500">Masuk untuk mengelola operasional Elmira Salon</p>
+          </div>
+
+          {loginError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-2xl text-center font-medium">
+              {loginError}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#4A3B32] mb-1">Username Admin</label>
+              <input
+                type="text"
+                value={loginUser}
+                onChange={(e) => setLoginUser(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-2xl border border-[#E8D3CE] text-xs focus:outline-none focus:border-[#8C6D62] bg-[#FAF7F5]/50"
+                placeholder="Masukkan username admin"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#4A3B32] mb-1">Password</label>
+              <input
+                type="password"
+                value={loginPass}
+                onChange={(e) => setLoginPass(e.target.value)}
+                required
+                className="w-full px-4 py-3 rounded-2xl border border-[#E8D3CE] text-xs focus:outline-none focus:border-[#8C6D62] bg-[#FAF7F5]/50"
+                placeholder="••••••••••••"
+              />
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 rounded-2xl bg-[#4A3B32] text-white font-semibold text-xs hover:bg-[#3A2E2B] transition shadow-sm"
+            >
+              Masuk ke Admin Dashboard
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <Link to="/" className="text-xs text-gray-500 hover:text-[#4A3B32] font-medium transition">
+              ← Kembali ke Beranda Utama
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // TAMPILAN UTAMA DASHBOARD ADMIN (SETELAH BERHASIL LOGIN)
+  // =========================================================================
   return (
     <div className="min-h-screen bg-[#FAF7F5] text-[#4A3B32] font-sans pb-20">
       {/* Top Header Bar */}
@@ -124,10 +239,16 @@ const AdminDashboard = () => {
           <h1 className="text-xl md:text-2xl font-serif font-bold text-[#4A3B32]">Admin Dashboard</h1>
           <span className="text-xs text-gray-500">Kelola jadwal janji temu dan pesanan Elmira Salon</span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <Link to="/" className="text-xs font-bold bg-white px-4 py-2 rounded-xl border border-[#E8D3CE] hover:bg-[#E8D3CE]/30 transition">
             Kembali ke Beranda
           </Link>
+          <button 
+            onClick={handleLogout}
+            className="text-xs font-bold bg-red-50 text-red-600 px-4 py-2 rounded-xl border border-red-200 hover:bg-red-100 transition"
+          >
+            Keluar (Logout)
+          </button>
         </div>
       </div>
 
