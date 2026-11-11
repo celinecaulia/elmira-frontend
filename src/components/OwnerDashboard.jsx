@@ -80,11 +80,18 @@ export default function OwnerDashboard() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
+      const ownerToken = import.meta.env.VITE_OWNER_SECRET_TOKEN;
+      if (!ownerToken) {
+        console.error('CRITICAL ERROR: VITE_OWNER_SECRET_TOKEN belum diatur di Environment Variables!');
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch(API_URL, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-owner-auth': import.meta.env.VITE_OWNER_SECRET_TOKEN || 'KunciRahasiaOwnerElmira2026'
+          'x-owner-auth': ownerToken
         }
       });
 
@@ -117,13 +124,23 @@ export default function OwnerDashboard() {
     localStorage.setItem('elmira_owner_expenses', JSON.stringify(expenses));
   }, [expenses]);
 
-  // HANDLER LOGIN OWNER YANG AMAN MENGGUNAKAN .ENV
+  // HANDLER LOGIN OWNER YANG AMAN MENGGUNAKAN .ENV TANPA FALLBACK
   const handleLogin = (e) => {
     e.preventDefault();
     
-    // Mengambil data rahasia dari file .env (jika kosong, pakai fallback aman)
-    const validUser = import.meta.env.VITE_OWNER_USERNAME || 'owner_elmirasalon';
-    const validPass = import.meta.env.VITE_OWNER_PASSWORD || 'awasownergalak1984';
+    const validUser = import.meta.env.VITE_OWNER_USERNAME;
+    const validPass = import.meta.env.VITE_OWNER_PASSWORD;
+
+    if (!validUser || !validPass) {
+      console.error('CRITICAL ERROR: VITE_OWNER_USERNAME atau VITE_OWNER_PASSWORD belum diatur di Environment Variables!');
+      Swal.fire({
+        icon: 'error',
+        title: 'Konfigurasi Bermasalah',
+        text: 'Konfigurasi autentikasi sistem belum lengkap.',
+        confirmButtonColor: '#8C5A4F',
+      });
+      return;
+    }
 
     if (username === validUser && password === validPass) {
       sessionStorage.setItem('elmira_owner_auth', 'true');
@@ -190,12 +207,13 @@ export default function OwnerDashboard() {
   // PENGOLAHAN DATA STRATEGIS UNTUK GRAFIK & DIAGRAM (USEMEMO)
   // =========================================================================
   const analytics = useMemo(() => {
-    // Filter pesanan yang tidak dibatalkan untuk dihitung trennya
-    const validBookings = bookings.filter(
-      (b) => (b.status || '').toLowerCase() !== 'cancelled'
-    );
+    // Sesuai Bab 3.2: Pemasukan & metrik dasbor dihitung dari reservasi berstatus Confirmed (termasuk yang telah Completed)
+    const validBookings = bookings.filter((b) => {
+      const status = (b.status || '').toLowerCase();
+      return status === 'confirmed' || status === 'completed';
+    });
 
-    // Hitung pemasukan dari setiap booking
+    // Hitung pemasukan dari setiap booking yang telah Confirmed
     let totalRevenue = 0;
     const categoryCount = { 'Hair Styling': 0, 'Treatments': 0, 'Hair Coloring': 0 };
     const servicePopularity = {};
@@ -221,7 +239,6 @@ export default function OwnerDashboard() {
         }
       });
 
-      // Hanya akumulasi ke Pemasukan Bersih jika status Confirmed / Completed (atau semua valid jika testing)
       totalRevenue += bookingTotal;
 
       const dateKey = b.date || '2026-11-01';
@@ -409,7 +426,7 @@ export default function OwnerDashboard() {
               {loading ? '...' : `${analytics.totalCustomers} Orang`}
             </h2>
             <p className="text-xs text-emerald-700 mt-2 font-medium">
-              ↑ Tren Kunjungan Aktif Terdata
+              ↑ Reservasi Berstatus Confirmed
             </p>
           </div>
 
@@ -421,7 +438,7 @@ export default function OwnerDashboard() {
               {loading ? '...' : formatRupiah(analytics.totalRevenue)}
             </h2>
             <p className="text-xs text-[#7A6A65] mt-2">
-              Akumulasi transaksi layanan reservasi
+              Akumulasi reservasi berstatus Confirmed
             </p>
           </div>
 
@@ -459,7 +476,7 @@ export default function OwnerDashboard() {
                 Grafik Evaluasi Pemasukan vs Pengeluaran
               </h3>
               <p className="text-xs text-[#7A6A65]">
-                Perbandingan arus kas masuk dari reservasi pelanggan dengan biaya operasional salon
+                Perbandingan arus kas masuk dari reservasi terkonfirmasi dengan biaya operasional salon
               </p>
             </div>
             <div className="h-72 w-full">

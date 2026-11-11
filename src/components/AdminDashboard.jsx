@@ -42,8 +42,14 @@ const AdminDashboard = () => {
   // Handler Login Admin
   const handleLogin = (e) => {
     e.preventDefault();
-    const validUser = import.meta.env.VITE_ADMIN_USERNAME || 'admin_elmirasalon';
-    const validPass = import.meta.env.VITE_ADMIN_PASSWORD || 'adminrahasia2026';
+    const validUser = import.meta.env.VITE_ADMIN_USERNAME;
+    const validPass = import.meta.env.VITE_ADMIN_PASSWORD;
+
+    if (!validUser || !validPass) {
+      console.error('CRITICAL ERROR: VITE_ADMIN_USERNAME atau VITE_ADMIN_PASSWORD belum diatur di Environment Variables!');
+      setLoginError('Konfigurasi autentikasi sistem belum lengkap.');
+      return;
+    }
 
     if (loginUser === validUser && loginPass === validPass) {
       localStorage.setItem('elmira_admin_auth', 'true');
@@ -113,7 +119,12 @@ const AdminDashboard = () => {
 
   const fetchBookings = async () => {
     try {
-      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN || 'KunciRahasiaAdminElmira2026';
+      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN;
+      if (!adminToken) {
+        console.error('CRITICAL ERROR: VITE_ADMIN_SECRET_TOKEN belum diatur di Environment Variables!');
+        setLoading(false);
+        return;
+      }
       const response = await fetch('https://elmira-backend.vercel.app/api/bookings', {
         headers: {
           'x-admin-auth': adminToken
@@ -132,7 +143,11 @@ const AdminDashboard = () => {
   const handleUpdateStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'Pending' ? 'Confirmed' : 'Completed';
     try {
-      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN || 'KunciRahasiaAdminElmira2026';
+      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN;
+      if (!adminToken) {
+        console.error('CRITICAL ERROR: VITE_ADMIN_SECRET_TOKEN belum diatur di Environment Variables!');
+        return;
+      }
       const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/${id}`, {
         method: 'PUT',
         headers: { 
@@ -153,7 +168,11 @@ const AdminDashboard = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Yakin ingin menghapus data booking ini?')) {
       try {
-        const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN || 'KunciRahasiaAdminElmira2026';
+        const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN;
+        if (!adminToken) {
+          console.error('CRITICAL ERROR: VITE_ADMIN_SECRET_TOKEN belum diatur di Environment Variables!');
+          return;
+        }
         const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/${id}`, {
           method: 'DELETE',
           headers: {
