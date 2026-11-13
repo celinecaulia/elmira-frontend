@@ -279,7 +279,8 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#4A3B32] font-sans pb-20 overflow-hidden">
+    // [REVISI RESPONSIVITAS 1]: overflow-hidden diganti jadi overflow-x-hidden, min-h-screen jadi min-h-[100dvh], dan pb-20 dinaikin jadi pb-32 biar bisa di-scroll sampai mentok bawah di HP
+    <div className="min-h-[100dvh] bg-[#FAF7F5] text-[#4A3B32] font-sans pb-32 md:pb-20 overflow-x-hidden">
       
       {/* Top Header Bar */}
       <div className="bg-[#EEDDDC]/70 border-b border-[#E8D3CE] px-8 md:px-16 py-4 flex justify-between items-center shadow-sm sticky top-0 z-50">
@@ -361,9 +362,11 @@ const BookingPage = () => {
                           }`}
                         >
                           <span>{day}</span>
-                          <span className={`text-[9px] mt-0.5 font-semibold ${isFull ? 'text-red-400' : isSelected ? 'text-[#D4B5B0]' : 'text-[#8C6D62]'}`}>
+                          {/* [REVISI RESPONSIVITAS 2]: Teks Status disembunyikan di HP, diganti jadi titik warna */}
+                          <span className={`hidden md:block text-[9px] mt-0.5 font-semibold ${isFull ? 'text-red-400' : isSelected ? 'text-[#D4B5B0]' : 'text-[#8C6D62]'}`}>
                             {status}
                           </span>
+                          <span className={`block md:hidden w-1.5 h-1.5 rounded-full mt-1 ${isFull ? 'bg-red-400' : isSelected ? 'bg-[#D4B5B0]' : 'bg-[#8C6D62]'}`}></span>
                         </button>
                       );
                     })}
@@ -383,7 +386,7 @@ const BookingPage = () => {
               <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] space-y-6">
                 <div className="flex justify-between items-center">
                   <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Kategori & Service (Bisa Pilih Lebih dari 1)</label>
-                  <span className="text-[11px] text-[#8C6D62] italic">Sesuai Pricelist Elmira Salon</span>
+                  <span className="text-[11px] text-[#8C6D62] italic hidden sm:block">Sesuai Pricelist Elmira Salon</span>
                 </div>
 
                 <div className="space-y-6">
@@ -521,7 +524,7 @@ const BookingPage = () => {
 
               <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] space-y-4">
                 
-                {/* [DIREVISI] Input Nama Lengkap dengan Validasi */}
+                {/* Input Nama Lengkap dengan Validasi */}
                 <div className="space-y-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Nama Lengkap</label>
                   <input 
@@ -535,7 +538,7 @@ const BookingPage = () => {
                   {formErrors.fullName && <span className="text-red-500 text-xs mt-1 block pl-2">{formErrors.fullName}</span>}
                 </div>
                 
-                {/* [DIREVISI] Input Email dengan Validasi */}
+                {/* Input Email dengan Validasi */}
                 <div className="space-y-2 pt-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">Email</label>
                   <input 
@@ -556,7 +559,7 @@ const BookingPage = () => {
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#E8D3CE] space-y-3">
                 
-                {/* [DIREVISI] Input WhatsApp dengan Validasi */}
+                {/* Input WhatsApp dengan Validasi */}
                 <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 block">Nomor WhatsApp</label>
                 <input 
                   type="text" 
