@@ -13,40 +13,37 @@ const BookingPage = () => {
     `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`
   );
   
-  // State dibikin kosong dari awal, karena bakal diisi otomatis dari MongoDB
+  // State untuk status kuota tanggal (Awalnya kosong, bakal diisi otomatis dari MongoDB /api/bookings/quota)
   const [dateStatuses, setDateStatuses] = useState({});
 
-  // [REVISI SESUAI BAB 3]: Ambil data real-time dari MongoDB lewat Backend Vercel
+  // Ambil data status kuota secara real-time dari rute publik MongoDB (/api/bookings/quota)
   useEffect(() => {
     const fetchRealTimeQuota = async () => {
       try {
-        // Nanya ke backend buat minta semua data reservasi
-        const response = await fetch('https://elmira-backend.vercel.app/api/bookings');
-        const data = await response.json();
+        const response = await fetch('https://elmira-backend.vercel.app/api/bookings/quota');
+        const result = await response.json();
         
-        if (response.ok) {
+        if (response.ok && result.success) {
           const bookingCounts = {};
-          // Asumsi struktur data dari backend lu adalah data.data atau array langsung
-          const bookingsList = data.data || data; 
+          const bookingsList = result.data; 
           
-          // Hitung jumlah reservasi per tanggal (TAPI abaikan yang statusnya Cancelled)
+          // Hitung jumlah reservasi per tanggal (abaikan yang statusnya Cancelled)
           bookingsList.forEach(booking => {
             if (booking.status !== 'Cancelled') {
               bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
             }
           });
 
-          // Terapin Aturan Bisnis Bab 3: Maksimal 5 reservasi per hari
+          // Aturan Bisnis Bab 3: Jika >= 5, status jadi 'Full', selain itu 'Ready'
           const realTimeStatuses = {};
           Object.keys(bookingCounts).forEach(date => {
             if (bookingCounts[date] >= 5) {
-              realTimeStatuses[date] = 'Full'; // Kalo udah 5 atau lebih, ubah jadi Full
+              realTimeStatuses[date] = 'Full';
             } else {
               realTimeStatuses[date] = 'Ready';
             }
           });
 
-          // Simpan ke state biar kalender otomatis berubah warnanya
           setDateStatuses(realTimeStatuses);
         }
       } catch (error) {
@@ -54,7 +51,7 @@ const BookingPage = () => {
       }
     };
 
-    fetchRealTimeQuota(); // Jalanin fungsinya tiap kali halaman dibuka
+    fetchRealTimeQuota();
   }, []);
   
   // [DIREVISI] Kosongkan array default agar tidak ada layanan bawaan yang nyangkut dan menumpuk
@@ -307,7 +304,7 @@ const BookingPage = () => {
   };
 
   return (
-    // [REVISI RESPONSIVITAS 1]: overflow-hidden diganti jadi overflow-x-hidden, min-h-screen jadi min-h-[100dvh], dan pb-20 dinaikin jadi pb-32 biar bisa di-scroll sampai mentok bawah di HP
+    // [REVISI RESPONSIVITAS]: overflow-x-hidden, min-h-[100dvh], pb-32 biar tombol ga ketutup bar HP
     <div className="min-h-[100dvh] bg-[#FAF7F5] text-[#4A3B32] font-sans pb-32 md:pb-20 overflow-x-hidden">
       
       {/* Top Header Bar */}
@@ -372,7 +369,7 @@ const BookingPage = () => {
                       const dateStr = `${formattedDay}/${formattedMonth}/${currentYear}`;
                       const isSelected = selectedDate === dateStr;
 
-                      // Cek status kuota secara real-time dari sinkronisasi Admin
+                      // Cek status kuota dari MongoDB real-time
                       const status = dateStatuses[dateStr] || 'Ready';
                       const isFull = status === 'Full';
 
@@ -390,7 +387,7 @@ const BookingPage = () => {
                           }`}
                         >
                           <span>{day}</span>
-                          {/* [REVISI RESPONSIVITAS 2]: Teks Status disembunyikan di HP, diganti jadi titik warna */}
+                          {/* [REVISI RESPONSIF KALENDER]: Teks Ready/Full disembunyikan di HP jadi titik, muncul di laptop */}
                           <span className={`hidden md:block text-[9px] mt-0.5 font-semibold ${isFull ? 'text-red-400' : isSelected ? 'text-[#D4B5B0]' : 'text-[#8C6D62]'}`}>
                             {status}
                           </span>
