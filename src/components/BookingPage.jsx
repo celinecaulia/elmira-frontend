@@ -13,20 +13,48 @@ const BookingPage = () => {
     `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`
   );
   
-  // State untuk status kuota tanggal yang disinkronkan dari Admin Dashboard (localStorage)
-  const [dateStatuses, setDateStatuses] = useState({
-    '15/10/2026': 'Ready',
-    '16/10/2026': 'Ready',
-    '21/10/2026': 'Full',
-    '28/10/2026': 'Full'
-  });
+  // State dibikin kosong dari awal, karena bakal diisi otomatis dari MongoDB
+  const [dateStatuses, setDateStatuses] = useState({});
 
-  // Ambil data status kuota dari localStorage saat halaman dibuka
+  // [REVISI SESUAI BAB 3]: Ambil data real-time dari MongoDB lewat Backend Vercel
   useEffect(() => {
-    const savedStatuses = localStorage.getItem('elmira_date_statuses');
-    if (savedStatuses) {
-      setDateStatuses(JSON.parse(savedStatuses));
-    }
+    const fetchRealTimeQuota = async () => {
+      try {
+        // Nanya ke backend buat minta semua data reservasi
+        const response = await fetch('https://elmira-backend.vercel.app/api/bookings');
+        const data = await response.json();
+        
+        if (response.ok) {
+          const bookingCounts = {};
+          // Asumsi struktur data dari backend lu adalah data.data atau array langsung
+          const bookingsList = data.data || data; 
+          
+          // Hitung jumlah reservasi per tanggal (TAPI abaikan yang statusnya Cancelled)
+          bookingsList.forEach(booking => {
+            if (booking.status !== 'Cancelled') {
+              bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
+            }
+          });
+
+          // Terapin Aturan Bisnis Bab 3: Maksimal 5 reservasi per hari
+          const realTimeStatuses = {};
+          Object.keys(bookingCounts).forEach(date => {
+            if (bookingCounts[date] >= 5) {
+              realTimeStatuses[date] = 'Full'; // Kalo udah 5 atau lebih, ubah jadi Full
+            } else {
+              realTimeStatuses[date] = 'Ready';
+            }
+          });
+
+          // Simpan ke state biar kalender otomatis berubah warnanya
+          setDateStatuses(realTimeStatuses);
+        }
+      } catch (error) {
+        console.error('Gagal narik data kuota dari MongoDB:', error);
+      }
+    };
+
+    fetchRealTimeQuota(); // Jalanin fungsinya tiap kali halaman dibuka
   }, []);
   
   // [DIREVISI] Kosongkan array default agar tidak ada layanan bawaan yang nyangkut dan menumpuk
