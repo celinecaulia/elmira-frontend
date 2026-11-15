@@ -25,16 +25,19 @@ const BookingPage = () => {
         
         if (response.ok && result.success) {
           const bookingCounts = {};
+          const blockedDates = {};
           const bookingsList = result.data; 
           
-          // Hitung jumlah reservasi per tanggal (abaikan yang statusnya Cancelled)
+          // Hitung jumlah reservasi per tanggal (abaikan Cancelled) & deteksi kunci manual Admin
           bookingsList.forEach(booking => {
-            if (booking.status !== 'Cancelled') {
+            if (booking.status === 'BlockedByAdmin') {
+              blockedDates[booking.date] = true;
+            } else if (booking.status !== 'Cancelled') {
               bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
             }
           });
 
-          // Aturan Bisnis Bab 3: Jika >= 5, status jadi 'Full', selain itu 'Ready'
+          // Aturan Bisnis Bab 3: Jika >= 5 ATAU dikunci manual oleh Admin, status jadi 'Full'
           const realTimeStatuses = {};
           Object.keys(bookingCounts).forEach(date => {
             if (bookingCounts[date] >= 5) {
@@ -42,6 +45,11 @@ const BookingPage = () => {
             } else {
               realTimeStatuses[date] = 'Ready';
             }
+          });
+
+          // Terapkan status Full untuk tanggal yang dikunci manual oleh Admin dari Dashboard
+          Object.keys(blockedDates).forEach(date => {
+            realTimeStatuses[date] = 'Full';
           });
 
           setDateStatuses(realTimeStatuses);
