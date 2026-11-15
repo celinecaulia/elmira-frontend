@@ -96,37 +96,48 @@ const PricingPage = () => {
           </div>
 
           <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] overflow-x-auto transition-all duration-300 hover:shadow-md">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full min-w-[520px] text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-200 text-xs uppercase tracking-wider bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">
-                  <th className="py-3 font-bold">Layanan</th>
-                  <th className="py-3 font-bold">Short</th>
-                  <th className="py-3 font-bold">Medium</th>
-                  <th className="py-3 font-bold">Long</th>
-                  <th className="py-3 font-bold">Extra Long</th>
+                {/* [REVISI RESPONSIF TABEL]: Pindahkan gradasi teks dari <tr> ke <span> di dalam <th> agar tidak ngeblok kotak cokelat di HP */}
+                <tr className="border-b border-gray-200 text-xs uppercase tracking-wider text-[#8C6D62]">
+                  <th className="py-3 pr-4 font-bold whitespace-nowrap">
+                    <span className="bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">Layanan</span>
+                  </th>
+                  <th className="py-3 px-3 font-bold whitespace-nowrap">
+                    <span className="bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">Short</span>
+                  </th>
+                  <th className="py-3 px-3 font-bold whitespace-nowrap">
+                    <span className="bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">Medium</span>
+                  </th>
+                  <th className="py-3 px-3 font-bold whitespace-nowrap">
+                    <span className="bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">Long</span>
+                  </th>
+                  <th className="py-3 pl-3 font-bold whitespace-nowrap">
+                    <span className="bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">Extra Long</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
                 <tr>
-                  <td className="py-4 font-serif font-semibold text-[#4A3B32]">Basic Color</td>
-                  <td className="py-4 text-gray-600">Rp. 120.000</td>
-                  <td className="py-4 text-gray-600">Rp. 145.000</td>
-                  <td className="py-4 text-gray-600">Rp. 180.000</td>
-                  <td className="py-4 text-gray-600">Rp. 200.000</td>
+                  <td className="py-4 pr-4 font-serif font-semibold text-[#4A3B32] whitespace-nowrap">Basic Color</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 120.000</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 145.000</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 180.000</td>
+                  <td className="py-4 pl-3 text-gray-600 whitespace-nowrap">Rp. 200.000</td>
                 </tr>
                 <tr>
-                  <td className="py-4 font-serif font-semibold text-[#4A3B32]">Balayage No Bleach</td>
-                  <td className="py-4 text-gray-600">Rp. 250.000</td>
-                  <td className="py-4 text-gray-600">Rp. 280.000</td>
-                  <td className="py-4 text-gray-600">Rp. 300.000</td>
-                  <td className="py-4 text-gray-600">Rp. 360.000</td>
+                  <td className="py-4 pr-4 font-serif font-semibold text-[#4A3B32] whitespace-nowrap">Balayage No Bleach</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 250.000</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 280.000</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 300.000</td>
+                  <td className="py-4 pl-3 text-gray-600 whitespace-nowrap">Rp. 360.000</td>
                 </tr>
                 <tr>
-                  <td className="py-4 font-serif font-semibold text-[#4A3B32]">Highlight No Bleach</td>
-                  <td className="py-4 text-gray-600">Rp. 400.000</td>
-                  <td className="py-4 text-gray-600">Rp. 420.000</td>
-                  <td className="py-4 text-gray-600">Rp. 450.000</td>
-                  <td className="py-4 text-gray-600">Rp. 480.000</td>
+                  <td className="py-4 pr-4 font-serif font-semibold text-[#4A3B32] whitespace-nowrap">Highlight No Bleach</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 400.000</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 420.000</td>
+                  <td className="py-4 px-3 text-gray-600 whitespace-nowrap">Rp. 450.000</td>
+                  <td className="py-4 pl-3 text-gray-600 whitespace-nowrap">Rp. 480.000</td>
                 </tr>
               </tbody>
             </table>
