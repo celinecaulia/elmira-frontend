@@ -20,7 +20,10 @@ const BookingPage = () => {
   useEffect(() => {
     const fetchRealTimeQuota = async () => {
       try {
-        const response = await fetch('https://elmira-backend.vercel.app/api/bookings/quota');
+        // [FIX ANTI-CACHE]: Paksa browser & Vercel selalu narik data terbaru dari MongoDB
+        const response = await fetch(`https://elmira-backend.vercel.app/api/bookings/quota?t=${Date.now()}`, {
+          cache: 'no-store'
+        });
         const result = await response.json();
         
         if (response.ok && result.success) {
