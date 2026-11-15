@@ -27,15 +27,19 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // [REVISI SINKRONISASI MONGODB]: Hitung status kuota otomatis dari data bookings MongoDB (bukan localStorage)
+  // [REVISI SINKRONISASI MONGODB]: Hitung status kuota otomatis (5 pesanan) & deteksi kunci manual (BlockedByAdmin)
   useEffect(() => {
     const syncQuotaWithDatabase = async () => {
       try {
         // Jika data bookings sudah ditarik oleh fetchBookings, hitung langsung dari state bookings
         if (bookings && bookings.length > 0) {
           const bookingCounts = {};
+          const blockedDates = {};
+
           bookings.forEach(booking => {
-            if (booking.status !== 'Cancelled') {
+            if (booking.status === 'BlockedByAdmin') {
+              blockedDates[booking.date] = true;
+            } else if (booking.status !== 'Cancelled') {
               bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
             }
           });
@@ -49,6 +53,11 @@ const AdminDashboard = () => {
             }
           });
 
+          // Terapkan status Full jika tanggal dikunci manual oleh Admin
+          Object.keys(blockedDates).forEach(date => {
+            realTimeStatuses[date] = 'Full';
+          });
+
           setDateStatuses(realTimeStatuses);
         } else {
           // Fallback narik dari rute publik /quota agar selalu sinkron 100% dengan sisi pelanggan
@@ -56,8 +65,12 @@ const AdminDashboard = () => {
           const result = await response.json();
           if (response.ok && result.success) {
             const bookingCounts = {};
+            const blockedDates = {};
+
             result.data.forEach(booking => {
-              if (booking.status !== 'Cancelled') {
+              if (booking.status === 'BlockedByAdmin') {
+                blockedDates[booking.date] = true;
+              } else if (booking.status !== 'Cancelled') {
                 bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
               }
             });
@@ -69,6 +82,10 @@ const AdminDashboard = () => {
               } else {
                 realTimeStatuses[date] = 'Ready';
               }
+            });
+
+            Object.keys(blockedDates).forEach(date => {
+              realTimeStatuses[date] = 'Full';
             });
 
             setDateStatuses(realTimeStatuses);
@@ -140,17 +157,40 @@ const AdminDashboard = () => {
     }
   };
 
-  const toggleDateStatus = (dateStr) => {
+  // [REVISI KUNCI MANUAL KE MONGODB]: Saat Admin klik tanggal, langsung tembak ke rute /toggle-quota di Backend
+  const toggleDateStatus = async (dateStr) => {
     const currentStatus = dateStatuses[dateStr] || 'Ready';
     const newStatus = currentStatus === 'Ready' ? 'Full' : 'Ready';
+    
+    // Update tampilan secara instan di layar
     const updatedStatuses = {
       ...dateStatuses,
       [dateStr]: newStatus
     };
     setDateStatuses(updatedStatuses);
     
-    // Simpan ke localStorage agar fungsi asli tidak berubah
-    localStorage.setItem('elmira_date_statuses', JSON.stringify(updatedStatuses));
+    // Kirim perubahan ke MongoDB agar langsung tersinkronisasi ke HP & Laptop semua user
+    try {
+      const adminToken = import.meta.env.VITE_ADMIN_SECRET_TOKEN;
+      if (!adminToken) {
+        console.error('CRITICAL ERROR: VITE_ADMIN_SECRET_TOKEN belum diatur di Environment Variables!');
+        return;
+      }
+      const response = await fetch('https://elmira-backend.vercel.app/api/bookings/toggle-quota', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-auth': adminToken
+        },
+        body: JSON.stringify({ date: dateStr })
+      });
+
+      if (response.ok) {
+        fetchBookings(); // Refresh data dari MongoDB agar sinkronisasi terkunci sempurna
+      }
+    } catch (err) {
+      console.error('Gagal mengubah status kuota tanggal di MongoDB:', err);
+    }
   };
 
   // Mengambil data booking dari backend Express & MongoDB dengan Header Keamanan Admin
@@ -230,6 +270,9 @@ const AdminDashboard = () => {
       }
     }
   };
+
+  // Filter khusus untuk menyembunyikan dokumen penanda kunci admin dari Tabel Pelanggan & Total Booking
+  const realCustomerBookings = bookings.filter(item => item.status !== 'BlockedByAdmin');
 
   // =========================================================================
   // TAMPILAN FORM LOGIN ADMIN (JIKA BELUM TERAUTENTIKASI)
@@ -321,7 +364,7 @@ const AdminDashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#E8D3CE] space-y-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Total Booking Masuk</span>
-            <h2 className="text-3xl font-serif font-bold text-[#4A3B32]">{bookings.length}</h2>
+            <h2 className="text-3xl font-serif font-bold text-[#4A3B32]">{realCustomerBookings.length}</h2>
           </div>
           <div className="bg-white rounded-3xl p-6 shadow-sm border border-[#E8D3CE] space-y-1">
             <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">Status Aktif</span>
@@ -421,7 +464,7 @@ const AdminDashboard = () => {
 
           {loading ? (
             <p className="text-center text-gray-500 py-8 text-sm">Memuat data dari database...</p>
-          ) : bookings.length === 0 ? (
+          ) : realCustomerBookings.length === 0 ? (
             <div className="text-center py-12 space-y-2">
               <p className="text-gray-500 text-sm">Belum ada data booking yang masuk ke database.</p>
               <p className="text-xs text-[#8C6D62]">Coba lakukan pemesanan melalui halaman *Booking* di website utama.</p>
@@ -440,7 +483,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E8D3CE]/30">
-                  {bookings.map((item) => (
+                  {realCustomerBookings.map((item) => (
                     <tr key={item._id} className="hover:bg-[#FAF7F5]/60 transition">
                       <td className="py-4 px-4 font-bold text-[#4A3B32]">{item.fullName}</td>
                       <td className="py-4 px-4 text-gray-600">
