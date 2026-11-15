@@ -47,18 +47,18 @@ const PricingPage = () => {
             <p className="text-gray-500 text-xs mt-1">Potong, cuci, dan blow harian — layanan yang paling sering diambil dan bisa selesai dalam satu jam.</p>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] space-y-6 transition-all duration-300 hover:shadow-md">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <span className="font-serif font-semibold text-lg text-[#4A3B32]">Hair Cut</span>
-              <span className="font-bold text-[#4A3B32] text-lg">Rp. 20.000</span>
+          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] space-y-5 transition-all duration-300 hover:shadow-md">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4 gap-4">
+              <span className="font-serif font-semibold text-sm md:text-base text-[#4A3B32]">Hair Cut</span>
+              <span className="font-bold text-[#4A3B32] text-sm md:text-base whitespace-nowrap">Rp. 20.000</span>
             </div>
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <span className="font-serif font-semibold text-lg text-[#4A3B32]">Wash and Blow Dry</span>
-              <span className="font-bold text-[#4A3B32] text-lg">Rp. 20.000</span>
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4 gap-4">
+              <span className="font-serif font-semibold text-sm md:text-base text-[#4A3B32]">Wash and Blow Dry</span>
+              <span className="font-bold text-[#4A3B32] text-sm md:text-base whitespace-nowrap">Rp. 20.000</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="font-serif font-semibold text-lg text-[#4A3B32]">Wash and Blow In</span>
-              <span className="font-bold text-[#4A3B32] text-lg">Rp. 50.000</span>
+            <div className="flex justify-between items-center gap-4">
+              <span className="font-serif font-semibold text-sm md:text-base text-[#4A3B32]">Wash and Blow In</span>
+              <span className="font-bold text-[#4A3B32] text-sm md:text-base whitespace-nowrap">Rp. 50.000</span>
             </div>
           </div>
         </div>
@@ -71,18 +71,18 @@ const PricingPage = () => {
             <p className="text-gray-500 text-xs mt-1">Perawatan rambut hingga wajah</p>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] space-y-6 transition-all duration-300 hover:shadow-md">
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <span className="font-serif font-semibold text-lg text-[#4A3B32]">Creambath</span>
-              <span className="font-bold text-[#4A3B32] text-lg">Rp. 65.000</span>
+          <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] space-y-5 transition-all duration-300 hover:shadow-md">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4 gap-4">
+              <span className="font-serif font-semibold text-sm md:text-base text-[#4A3B32]">Creambath</span>
+              <span className="font-bold text-[#4A3B32] text-sm md:text-base whitespace-nowrap">Rp. 65.000</span>
             </div>
-            <div className="flex justify-between items-center border-b border-gray-100 pb-4">
-              <span className="font-serif font-semibold text-lg text-[#4A3B32]">Deep Facial Cleansing</span>
-              <span className="font-bold text-[#4A3B32] text-lg">Rp. 50.000</span>
+            <div className="flex justify-between items-center border-b border-gray-100 pb-4 gap-4">
+              <span className="font-serif font-semibold text-sm md:text-base text-[#4A3B32]">Deep Facial Cleansing</span>
+              <span className="font-bold text-[#4A3B32] text-sm md:text-base whitespace-nowrap">Rp. 50.000</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="font-serif font-semibold text-lg text-[#4A3B32]">Hair Mask & Spa</span>
-              <span className="font-bold text-[#4A3B32] text-lg">Rp. 90.000</span>
+            <div className="flex justify-between items-center gap-4">
+              <span className="font-serif font-semibold text-sm md:text-base text-[#4A3B32]">Hair Mask & Spa</span>
+              <span className="font-bold text-[#4A3B32] text-sm md:text-base whitespace-nowrap">Rp. 90.000</span>
             </div>
           </div>
         </div>
@@ -98,7 +98,6 @@ const PricingPage = () => {
           <div className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-[#E8D3CE] overflow-x-auto transition-all duration-300 hover:shadow-md">
             <table className="w-full min-w-[520px] text-left border-collapse">
               <thead>
-                {/* [REVISI RESPONSIF TABEL]: Pindahkan gradasi teks dari <tr> ke <span> di dalam <th> agar tidak ngeblok kotak cokelat di HP */}
                 <tr className="border-b border-gray-200 text-xs uppercase tracking-wider text-[#8C6D62]">
                   <th className="py-3 pr-4 font-bold whitespace-nowrap">
                     <span className="bg-gradient-to-r from-[#4A3B32] via-[#8C6D62] to-[#D4B5B0] bg-clip-text text-transparent">Layanan</span>
