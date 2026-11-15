@@ -16,12 +16,8 @@ const AdminDashboard = () => {
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [currentMonth, setCurrentMonth] = useState(today.getMonth()); // 0-11
   
-  const [dateStatuses, setDateStatuses] = useState({
-    '15/10/2026': 'Ready',
-    '16/10/2026': 'Ready',
-    '21/10/2026': 'Full',
-    '28/10/2026': 'Full'
-  });
+  // State dikosongkan dari hardcode lokal agar murni membaca sinkronisasi MongoDB
+  const [dateStatuses, setDateStatuses] = useState({});
 
   // Cek status login admin dari localStorage saat pertama kali dimuat
   useEffect(() => {
@@ -31,13 +27,60 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  // Ambil data status kuota dari localStorage saat pertama kali dimuat
+  // [REVISI SINKRONISASI MONGODB]: Hitung status kuota otomatis dari data bookings MongoDB (bukan localStorage)
   useEffect(() => {
-    const savedStatuses = localStorage.getItem('elmira_date_statuses');
-    if (savedStatuses) {
-      setDateStatuses(JSON.parse(savedStatuses));
-    }
-  }, []);
+    const syncQuotaWithDatabase = async () => {
+      try {
+        // Jika data bookings sudah ditarik oleh fetchBookings, hitung langsung dari state bookings
+        if (bookings && bookings.length > 0) {
+          const bookingCounts = {};
+          bookings.forEach(booking => {
+            if (booking.status !== 'Cancelled') {
+              bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
+            }
+          });
+
+          const realTimeStatuses = {};
+          Object.keys(bookingCounts).forEach(date => {
+            if (bookingCounts[date] >= 5) {
+              realTimeStatuses[date] = 'Full';
+            } else {
+              realTimeStatuses[date] = 'Ready';
+            }
+          });
+
+          setDateStatuses(realTimeStatuses);
+        } else {
+          // Fallback narik dari rute publik /quota agar selalu sinkron 100% dengan sisi pelanggan
+          const response = await fetch('https://elmira-backend.vercel.app/api/bookings/quota');
+          const result = await response.json();
+          if (response.ok && result.success) {
+            const bookingCounts = {};
+            result.data.forEach(booking => {
+              if (booking.status !== 'Cancelled') {
+                bookingCounts[booking.date] = (bookingCounts[booking.date] || 0) + 1;
+              }
+            });
+
+            const realTimeStatuses = {};
+            Object.keys(bookingCounts).forEach(date => {
+              if (bookingCounts[date] >= 5) {
+                realTimeStatuses[date] = 'Full';
+              } else {
+                realTimeStatuses[date] = 'Ready';
+              }
+            });
+
+            setDateStatuses(realTimeStatuses);
+          }
+        }
+      } catch (error) {
+        console.error('Gagal menyinkronkan kuota kalender admin:', error);
+      }
+    };
+
+    syncQuotaWithDatabase();
+  }, [bookings]);
 
   // Handler Login Admin
   const handleLogin = (e) => {
@@ -106,7 +149,7 @@ const AdminDashboard = () => {
     };
     setDateStatuses(updatedStatuses);
     
-    // Simpan ke localStorage agar langsung tersinkronisasi ke sisi User (BookingPage)
+    // Simpan ke localStorage agar fungsi asli tidak berubah
     localStorage.setItem('elmira_date_statuses', JSON.stringify(updatedStatuses));
   };
 
@@ -193,7 +236,7 @@ const AdminDashboard = () => {
   // =========================================================================
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-[#FAF7F5] flex items-center justify-center px-4 font-sans">
+      <div className="min-h-[100dvh] bg-[#FAF7F5] flex items-center justify-center px-4 font-sans">
         <div className="max-w-md w-full bg-white p-8 rounded-3xl shadow-sm border border-[#E8D3CE]">
           <div className="text-center mb-6 space-y-1">
             <h2 className="text-2xl font-serif font-bold text-[#4A3B32]">Admin Portal</h2>
@@ -251,14 +294,15 @@ const AdminDashboard = () => {
   // TAMPILAN UTAMA DASHBOARD ADMIN (SETELAH BERHASIL LOGIN)
   // =========================================================================
   return (
-    <div className="min-h-screen bg-[#FAF7F5] text-[#4A3B32] font-sans pb-20">
+    // [REVISI RESPONSIVITAS]: min-h-[100dvh], pb-32 md:pb-20, dan overflow-x-hidden
+    <div className="min-h-[100dvh] bg-[#FAF7F5] text-[#4A3B32] font-sans pb-32 md:pb-20 overflow-x-hidden">
       {/* Top Header Bar */}
-      <div className="bg-[#EEDDDC]/70 border-b border-[#E8D3CE] px-8 md:px-16 py-4 flex justify-between items-center shadow-sm">
+      <div className="bg-[#EEDDDC]/70 border-b border-[#E8D3CE] px-6 md:px-16 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
           <h1 className="text-xl md:text-2xl font-serif font-bold text-[#4A3B32]">Admin Dashboard</h1>
           <span className="text-xs text-gray-500">Kelola jadwal janji temu dan pesanan Elmira Salon</span>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
           <Link to="/" className="text-xs font-bold bg-white px-4 py-2 rounded-xl border border-[#E8D3CE] hover:bg-[#E8D3CE]/30 transition">
             Kembali ke Beranda
           </Link>
@@ -307,14 +351,14 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="bg-[#FAF7F5] p-6 rounded-3xl border border-[#E8D3CE]/60 space-y-3">
-            <div className="grid grid-cols-7 gap-2 text-center text-xs font-bold text-[#8C6D62]">
+          <div className="bg-[#FAF7F5] p-4 md:p-6 rounded-3xl border border-[#E8D3CE]/60 space-y-3">
+            <div className="grid grid-cols-7 gap-1 md:gap-2 text-center text-xs font-bold text-[#8C6D62]">
               {weekDays.map((d, i) => (
                 <div key={i}>{d}</div>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1 md:gap-2">
               {Array.from({ length: startDay }).map((_, index) => (
                 <div key={`empty-${index}`} />
               ))}
@@ -332,24 +376,28 @@ const AdminDashboard = () => {
                   <button
                     key={day}
                     onClick={() => toggleDateStatus(dateStr)}
-                    className={`p-3 rounded-2xl border text-xs flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 ${
+                    className={`py-2 px-1 md:p-3 rounded-2xl border text-xs flex flex-col items-center justify-center transition-all duration-300 hover:scale-105 ${
                       isFull 
                         ? 'bg-red-50 border-red-200 text-red-600 shadow-sm' 
                         : 'bg-white border-[#E8D3CE] text-[#4A3B32] shadow-sm font-medium'
                     }`}
                   >
-                    <span className="font-bold text-sm">{day}</span>
-                    <span className={`text-[10px] mt-1 px-2 py-0.5 rounded-full font-bold ${
+                    <span className="font-bold text-xs md:text-sm">{day}</span>
+                    {/* [REVISI RESPONSIVITAS KALENDER ADMIN]: Teks muncul di layar besar, titik warna muncul di HP biar ga kepotong */}
+                    <span className={`hidden md:inline-block text-[10px] mt-1 px-2 py-0.5 rounded-full font-bold ${
                       isFull ? 'bg-red-200 text-red-700' : 'bg-green-100 text-green-700'
                     }`}>
                       {status}
                     </span>
+                    <span className={`block md:hidden w-2 h-2 rounded-full mt-1 ${
+                      isFull ? 'bg-red-500' : 'bg-green-500'
+                    }`}></span>
                   </button>
                 );
               })}
             </div>
 
-            <div className="flex justify-between items-center text-xs text-gray-500 pt-3 border-t border-[#E8D3CE]/40">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 text-xs text-gray-500 pt-3 border-t border-[#E8D3CE]/40">
               <span>💡 Tips: Klik tanggal untuk beralih status antara <b>Ready</b> dan <b>Full</b> secara real-time.</span>
               <div className="flex items-center gap-4 text-xs font-semibold">
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-green-500"></span> Ready</span>
